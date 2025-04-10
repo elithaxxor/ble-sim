@@ -21,38 +21,48 @@ public class FakeAPWindow extends Application {
         primaryStage.setTitle("Bluetooth Device Simulation");
 
         // Main Layout
-        VBox mainLayout = new VBox(10);
+        VBox mainLayout = new VBox(20);
+        mainLayout.setPadding(new javafx.geometry.Insets(20));
 
         // SSID input
         ssidInput = new TextField();
         ssidInput.setPromptText("Enter Fake AP SSID");
+        ssidInput.getStyleClass().add("text-field");
         mainLayout.getChildren().add(new Label("SSID:"));
         mainLayout.getChildren().add(ssidInput);
 
         // Service UUID input
         serviceUUIDInput = new TextField();
         serviceUUIDInput.setPromptText("Enter Bluetooth Service UUID");
+        serviceUUIDInput.getStyleClass().add("text-field");
         mainLayout.getChildren().add(new Label("Service UUID:"));
         mainLayout.getChildren().add(serviceUUIDInput);
 
         // Device MAC address input (for pairing)
         deviceMacInput = new TextField();
         deviceMacInput.setPromptText("Enter Device MAC for Pairing");
+        deviceMacInput.getStyleClass().add("text-field");
         mainLayout.getChildren().add(new Label("Device MAC:"));
         mainLayout.getChildren().add(deviceMacInput);
 
         // Interface selector (for Fake AP)
         interfaceSelector = new ComboBox<>();
         interfaceSelector.getItems().addAll("wlan0", "wlan1");  // Simulated options
+        interfaceSelector.getStyleClass().add("combo-box");
         mainLayout.getChildren().add(new Label("Select Interface:"));
         mainLayout.getChildren().add(interfaceSelector);
 
-        // Buttons
+        // Buttons with macOS look and feel
         startButton = new Button("Start Fake AP");
+        startButton.getStyleClass().add("button");
         stopButton = new Button("Stop Fake AP");
+        stopButton.getStyleClass().add("button");
         simulatePairingButton = new Button("Simulate Pairing");
+        simulatePairingButton.getStyleClass().add("button");
         simulateGattButton = new Button("Simulate GATT Services");
+        simulateGattButton.getStyleClass().add("button");
         periodicUpdatesButton = new Button("Start Periodic Updates");
+        periodicUpdatesButton.getStyleClass().add("button");
 
         // Add buttons to layout
         mainLayout.getChildren().addAll(startButton, stopButton, simulatePairingButton, simulateGattButton, periodicUpdatesButton);
@@ -60,8 +70,20 @@ public class FakeAPWindow extends Application {
         // Verbose log text area
         verboseLog = new TextArea();
         verboseLog.setEditable(false);
+        verboseLog.getStyleClass().add("text-area");
         mainLayout.getChildren().add(new Label("Verbose Log:"));
         mainLayout.getChildren().add(verboseLog);
+
+        // Clear Log Button
+        Button clearLogButton = new Button("Clear Log");
+        clearLogButton.getStyleClass().add("button");
+        clearLogButton.setOnAction(event -> clearLog());
+        mainLayout.getChildren().add(clearLogButton);
+
+        // Status Bar
+        Label statusBar = new Label("Ready");
+        statusBar.setStyle("-fx-background-color: #f0f0f5; -fx-padding: 5px 10px; -fx-font-size: 12px; -fx-text-fill: #555555;");
+        mainLayout.getChildren().add(statusBar);
 
         // Button actions
         startButton.setOnAction(event -> startFakeAP());
@@ -70,8 +92,9 @@ public class FakeAPWindow extends Application {
         simulateGattButton.setOnAction(event -> simulateGattServices());
         periodicUpdatesButton.setOnAction(event -> startPeriodicUpdates());
 
-        // Scene setup
+        // Scene setup with macOS-inspired style
         Scene scene = new Scene(mainLayout, 400, 500);
+        scene.getStylesheets().add(getClass().getResource("macos-style.css").toExternalForm()); // Apply the macOS CSS
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -111,5 +134,9 @@ public class FakeAPWindow extends Application {
     private void startPeriodicUpdates() {
         verboseLog.appendText("Starting periodic updates for Bluetooth characteristics...\n");
         // Start periodic updates for battery and heart rate (to be implemented)
+    }
+
+    private void clearLog() {
+        verboseLog.clear();
     }
 }
