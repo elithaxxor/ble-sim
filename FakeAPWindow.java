@@ -1,16 +1,14 @@
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class FakeAPWindow extends Application {
 
-    // UI elements
-    private TextField ssidInput, serviceUUIDInput, deviceMacInput;
-    private Button startButton, stopButton, simulatePairingButton, simulateGattButton, periodicUpdatesButton;
+    private ComboBox<String> deviceSelector;
     private TextArea verboseLog;
-    private ComboBox<String> interfaceSelector;
 
     public static void main(String[] args) {
         launch(args);
@@ -24,119 +22,41 @@ public class FakeAPWindow extends Application {
         VBox mainLayout = new VBox(20);
         mainLayout.setPadding(new javafx.geometry.Insets(20));
 
-        // SSID input
-        ssidInput = new TextField();
-        ssidInput.setPromptText("Enter Fake AP SSID");
-        ssidInput.getStyleClass().add("text-field");
-        mainLayout.getChildren().add(new Label("SSID:"));
-        mainLayout.getChildren().add(ssidInput);
+        // Device Selector (for discovery)
+        deviceSelector = new ComboBox<>();
+        deviceSelector.setPromptText("Detecting Devices...");
+        deviceSelector.getStyleClass().add("combo-box");
+        mainLayout.getChildren().add(new Label("Select Device:"));
+        mainLayout.getChildren().add(deviceSelector);
 
-        // Service UUID input
-        serviceUUIDInput = new TextField();
-        serviceUUIDInput.setPromptText("Enter Bluetooth Service UUID");
-        serviceUUIDInput.getStyleClass().add("text-field");
-        mainLayout.getChildren().add(new Label("Service UUID:"));
-        mainLayout.getChildren().add(serviceUUIDInput);
+        // Start Discovery Button
+        Button startDiscoveryButton = new Button("Start Device Discovery");
+        startDiscoveryButton.getStyleClass().add("button");
+        startDiscoveryButton.setOnAction(event -> startDeviceDiscovery());
+        mainLayout.getChildren().add(startDiscoveryButton);
 
-        // Device MAC address input (for pairing)
-        deviceMacInput = new TextField();
-        deviceMacInput.setPromptText("Enter Device MAC for Pairing");
-        deviceMacInput.getStyleClass().add("text-field");
-        mainLayout.getChildren().add(new Label("Device MAC:"));
-        mainLayout.getChildren().add(deviceMacInput);
+        // Real-time Battery Level Chart
+        LineChart<Number, Number> batteryChart = RealTimeChart.createBatteryChart();
+        mainLayout.getChildren().add(batteryChart);
 
-        // Interface selector (for Fake AP)
-        interfaceSelector = new ComboBox<>();
-        interfaceSelector.getItems().addAll("wlan0", "wlan1");  // Simulated options
-        interfaceSelector.getStyleClass().add("combo-box");
-        mainLayout.getChildren().add(new Label("Select Interface:"));
-        mainLayout.getChildren().add(interfaceSelector);
-
-        // Buttons with macOS look and feel
-        startButton = new Button("Start Fake AP");
-        startButton.getStyleClass().add("button");
-        stopButton = new Button("Stop Fake AP");
-        stopButton.getStyleClass().add("button");
-        simulatePairingButton = new Button("Simulate Pairing");
-        simulatePairingButton.getStyleClass().add("button");
-        simulateGattButton = new Button("Simulate GATT Services");
-        simulateGattButton.getStyleClass().add("button");
-        periodicUpdatesButton = new Button("Start Periodic Updates");
-        periodicUpdatesButton.getStyleClass().add("button");
-
-        // Add buttons to layout
-        mainLayout.getChildren().addAll(startButton, stopButton, simulatePairingButton, simulateGattButton, periodicUpdatesButton);
-
-        // Verbose log text area
+        // Verbose Log text area
         verboseLog = new TextArea();
         verboseLog.setEditable(false);
         verboseLog.getStyleClass().add("text-area");
         mainLayout.getChildren().add(new Label("Verbose Log:"));
         mainLayout.getChildren().add(verboseLog);
 
-        // Clear Log Button
-        Button clearLogButton = new Button("Clear Log");
-        clearLogButton.getStyleClass().add("button");
-        clearLogButton.setOnAction(event -> clearLog());
-        mainLayout.getChildren().add(clearLogButton);
-
-        // Status Bar
-        Label statusBar = new Label("Ready");
-        statusBar.setStyle("-fx-background-color: #f0f0f5; -fx-padding: 5px 10px; -fx-font-size: 12px; -fx-text-fill: #555555;");
-        mainLayout.getChildren().add(statusBar);
-
-        // Button actions
-        startButton.setOnAction(event -> startFakeAP());
-        stopButton.setOnAction(event -> stopFakeAP());
-        simulatePairingButton.setOnAction(event -> simulatePairing());
-        simulateGattButton.setOnAction(event -> simulateGattServices());
-        periodicUpdatesButton.setOnAction(event -> startPeriodicUpdates());
-
-        // Scene setup with macOS-inspired style
-        Scene scene = new Scene(mainLayout, 400, 500);
-        scene.getStylesheets().add(getClass().getResource("macos-style.css").toExternalForm()); // Apply the macOS CSS
+        // Scene and Styling
+        Scene scene = new Scene(mainLayout, 600, 600);
+        scene.getStylesheets().add(getClass().getResource("macos-style.css").toExternalForm()); // Apply macOS styling
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    private void startFakeAP() {
-        String ssid = ssidInput.getText();
-        String serviceUUID = serviceUUIDInput.getText();
-
-        if (ssid.isEmpty() || serviceUUID.isEmpty()) {
-            verboseLog.appendText("Please enter both SSID and Service UUID.\n");
-        } else {
-            BluetoothSimulation.startAdvertising(ssid, serviceUUID);
-            verboseLog.appendText("Started Fake AP advertising.\n");
-        }
-    }
-
-    private void stopFakeAP() {
-        verboseLog.appendText("Stopping Fake AP...\n");
-        // Logic to stop the fake AP
-    }
-
-    private void simulatePairing() {
-        String deviceMac = deviceMacInput.getText();
-        if (deviceMac.isEmpty()) {
-            verboseLog.appendText("Please enter a device MAC address.\n");
-        } else {
-            BluetoothSimulation.simulatePairing(deviceMac);
-            verboseLog.appendText("Simulating pairing with " + deviceMac + ".\n");
-        }
-    }
-
-    private void simulateGattServices() {
-        verboseLog.appendText("Simulating Bluetooth GATT services (Battery, Heart Rate)...\n");
-        // Simulate the GATT services for a selected device (to be implemented)
-    }
-
-    private void startPeriodicUpdates() {
-        verboseLog.appendText("Starting periodic updates for Bluetooth characteristics...\n");
-        // Start periodic updates for battery and heart rate (to be implemented)
-    }
-
-    private void clearLog() {
-        verboseLog.clear();
+    // Start device discovery and update the ComboBox
+    private void startDeviceDiscovery() {
+        new Thread(() -> {
+            DeviceDiscovery.discoverDevices(deviceSelector);
+        }).start();
     }
 }
